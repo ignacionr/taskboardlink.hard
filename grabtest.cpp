@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 	Grabber gr;
 	gr.Open();
 	pt.zero();
+	pt.down(Y_STEP * 25);
 	gr.setPreprocessor(selectOrange);
 	gr.setOutput(false,false);
 	
@@ -56,11 +57,16 @@ int main(int argc, char *argv[]) {
 	}
 	auto left = step;
 	// follow up and down to get those boundaries
+	// up: until there's no more tape
 	for(step = 0; found; step++) {
 		pt.up(Y_STEP);
 		found = gr.Capture(NULL);
 	}
-	pt.down(Y_STEP);
+	// down: to the start of the tape
+	for(found = gr.Capture(NULL); !found; found = gr.Capture(NULL)) {
+		pt.down(Y_STEP / 2);
+	}
+	// keep down: until the tape ends
 	for(step = 0; found; step++) {
 		pt.down(Y_STEP);
 		found = gr.Capture(NULL);
