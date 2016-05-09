@@ -29,8 +29,8 @@ bool selectOrange(int width, int height, unsigned char *yuv) {
 	 return factor > 3.0;
 }
 
-#define X_STEP 30000
-#define Y_STEP 30000
+#define X_STEP 70000
+#define Y_STEP 70000
 
 int main(int argc, char *argv[]) {
 	
