@@ -29,6 +29,9 @@ bool selectOrange(int width, int height, unsigned char *yuv) {
 	 return factor > 1.0; // more than 1% orange
 }
 
+#define X_STEP 30000
+#define Y_STEP 30000
+
 int main(int argc, char *argv[]) {
 	
 	// if (argc != 4)
@@ -46,10 +49,26 @@ int main(int argc, char *argv[]) {
 	
 	// move to the left until we find orange
 	bool found = false;
-	for (int step = 0; !found; step++) {
-		pt.left(30000);
+	int step;
+	for (step = 0; !found; step++) {
+		pt.left(X_STEP);
 		found = gr.Capture(NULL);
 	}
+	auto left = step;
+	// follow up and down to get those boundaries
+	for(step = 0; found; step++) {
+		pt.up(Y_STEP);
+		found = gr.Capture(NULL);
+	}
+	pt.down(Y_STEP);
+	for(step = 0; found; step++) {
+		pt.down(Y_STEP);
+		found = gr.Capture(NULL);
+	}
+	auto height = step;
+	
+	std::cout << "left: " << left << " height: " << height << std::endl;
+	
 	gr.Close();
 	return 0;
 }
