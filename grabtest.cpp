@@ -18,7 +18,7 @@ bool selectOrange(int width, int height, unsigned char *yuv) {
 		int g = (int) (Y - 0.34414 * (Cb - 0x80) - 0.71414 * (Cr - 0x80));
 		int b = (int) (Y + 1.77200 * (Cb - 0x80));
 		
-		if (r > 10 && b < r && abs(r-g) < 20) {
+		if (r > 180 && r > g && (r-g) > 80 && g > b) {
 			orangeCount++;
 		}
  	}
