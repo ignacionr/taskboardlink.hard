@@ -71,7 +71,7 @@ public:
         }
 
         void send(BYTE cmd1, BYTE cmd2, BYTE data1, BYTE data2) {
-                ssize_t cnt;
+                // ssize_t cnt;
                 char buff[10];
                 buff[0] = 0xff;
                 buff[1] = 1;
@@ -81,7 +81,7 @@ public:
                 buff[5] = data2;
                 buff[6] = (buff[1] + buff[2] + buff[3] + buff[4] + buff[5]) % 100;
                 write(_f, buff, 7);
-                cnt = read(_f, buff, 4);
+                // cnt = read(_f, buff, 4);
         }
         void left(int t) {
                 send(0,4,0,0);

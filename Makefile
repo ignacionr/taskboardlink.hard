@@ -9,6 +9,6 @@ clean:
 yuv.o: yuv.c yuv.h
 	g++ -c yuv.c
 
-grabtest.o: grabtest.cpp v4l2grab.hpp yuv.h
+grabtest.o: grabtest.cpp v4l2grab.hpp yuv.h pantilt.hpp
 	g++ -std=c++11 -c grabtest.cpp
 
