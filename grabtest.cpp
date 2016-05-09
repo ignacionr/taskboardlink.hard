@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
 		found = gr.Capture(NULL);
 	}
 	auto left = step;
+	std::cout << "left: " << left << std::endl;
 	// follow up and down to get those boundaries
 	// up: until there's no more tape
 	for(step = 0; found; step++) {
@@ -73,7 +74,26 @@ int main(int argc, char *argv[]) {
 	}
 	auto height = step;
 	
-	std::cout << "left: " << left << " height: " << height << std::endl;
+	std::cout << " height: " << height << std::endl;
+	
+	// move back the vertical center of the board
+	for(step = height/2; step > 0; step--) {
+		pt.up(Y_STEP);
+	}
+	
+	// move right until we see no more orange
+	step = 0;
+	for(found = gr.Capture(NULL); found; found = gr.Capture(NULL) ){
+		step++;
+	}
+	
+	// keep moving right until we find the right band
+	for(; !found; found = gr.Capture(NULL)) {
+		step++;
+	}
+	
+	auto width = step;
+	std::cout << "width: " << width << std::endl;
 	
 	gr.Close();
 	return 0;
