@@ -198,7 +198,7 @@ void jpegWrite(unsigned char* img, const char* jpegFilename)
 /**
 	process image read
 */
-void imageProcess(const void* p, struct timeval timestamp)
+bool imageProcess(const void* p, struct timeval timestamp)
 {
 	//timestamp.tv_sec
 	//timestamp.tv_usec
@@ -222,12 +222,14 @@ void imageProcess(const void* p, struct timeval timestamp)
 
 	// free temporary image
 	free(dst);
+	
+	return writeFile;
 }
 
 /**
 	read single frame
 */
-int frameRead(void)
+int frameRead(bool &result)
 {
 	struct v4l2_buffer buf;
 
@@ -254,7 +256,7 @@ int frameRead(void)
 
 	assert(buf.index < n_buffers);
 
-	imageProcess(buffers[buf.index].start,buf.timestamp);
+	result = imageProcess(buffers[buf.index].start,buf.timestamp);
 
 	if (-1 == xioctl(VIDIOC_QBUF, &buf))
 		errno_exit("VIDIOC_QBUF");
@@ -266,9 +268,10 @@ int frameRead(void)
 /**
 	mainloop: read frames and process them
 */
-void mainLoop(void)
+bool mainLoop(void)
 {	
 	int count;
+	bool result;
 	unsigned int numberOfTimeouts;
 
 	numberOfTimeouts = 0;
@@ -305,12 +308,13 @@ void mainLoop(void)
 				}
 			}
 
-			if (frameRead())
+			if (frameRead(result))
 				break;
 
 			/* EAGAIN - continue select loop. */
 		}
 	}
+	return result;
 }
 
 /**
@@ -650,13 +654,12 @@ public:
 		captureStart();
 	}
 	
-	void Capture(const char *oJpegFilename=NULL) {
+	bool Capture(const char *oJpegFilename=NULL) {
 		if (oJpegFilename)
 			jpegFilename = oJpegFilename;
 
-
 		// process frames
-		mainLoop();
+		return mainLoop();
 
 	}
 	
