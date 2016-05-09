@@ -84,11 +84,13 @@ int main(int argc, char *argv[]) {
 	// move right until we see no more orange
 	step = 0;
 	for(found = gr.Capture(NULL); found; found = gr.Capture(NULL) ){
+		pt.right(X_STEP);
 		step++;
 	}
 	
 	// keep moving right until we find the right band
 	for(; !found; found = gr.Capture(NULL)) {
+		pt.right(X_STEP);
 		step++;
 	}
 	
