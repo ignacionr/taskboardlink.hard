@@ -103,6 +103,10 @@ public:
                 usleep(t);
                 send(0,0,0,0);
         }
+        void zero() {
+                send(0,7,0,0x22);
+                sleep(10);
+        }
         ~PanTilt() {
 	        close(_f);
         }

@@ -31,30 +31,24 @@ bool selectOrange(int width, int height, unsigned char *yuv) {
 
 int main(int argc, char *argv[]) {
 	
-	if (argc != 4)
-	{
-		help();
-		return 1;
-	}
-	
-	auto right = strcmp("left", argv[1]) != 0;
-	auto steps = atol(argv[2]);
-	auto t = atol(argv[3]);
+	// if (argc != 4)
+	// {
+	// 	help();
+	// 	return 1;
+	// }
 	
 	PanTilt pt;
 	Grabber gr;
 	gr.Open();
+	pt.zero();
 	gr.setPreprocessor(selectOrange);
-	// gr.setOutput(false);
-	char fn[100];
-	for (int step = 0; step < steps; step++) {
-		sprintf(fn, "step%02d.jpg", step);
-		// sprintf(fn, "step%02d.yuv444", step);
-		if (right) 
-			pt.right(t);
-		else
-			pt.left(t);
-		gr.Capture(fn);
+	gr.setOutput(false,false);
+	
+	// move to the left until we find orange
+	bool found = false;
+	for (int step = 0; !found; step++) {
+		pt.left(30000);
+		found = gr.Capture(NULL);
 	}
 	gr.Close();
 	return 0;
