@@ -57,8 +57,13 @@ set_interface_attribs (int fd, int speed, int parity)
 }
 
         int _f;
+        int _x_step, _y_step;
+        int _current_x;
+        int _current_y;
 public:
-        PanTilt() {
+        PanTilt(int xStep, int yStep) {
+                _x_step = xStep;
+                _y_step = yStep;
         	_f = open("/dev/ttyUSB0", O_RDWR|O_NOCTTY|O_SYNC);
                 if (_f >= 0) {
                         puts("opened OK");
@@ -68,6 +73,14 @@ public:
                 }
 
         	set_interface_attribs(_f, B2400, 0);
+        }
+        
+        void setX(int x) {
+                _current_x = x;
+        }
+        
+        void setY(int y) {
+                _current_y = y;
         }
 
         void send(BYTE cmd1, BYTE cmd2, BYTE data1, BYTE data2) {
@@ -83,30 +96,47 @@ public:
                 write(_f, buff, 7);
                 // cnt = read(_f, buff, 4);
         }
-        void left(int t) {
+        void left() {
                 send(0,4,0,0);
-                usleep(t);
+                usleep(_x_step);
                 send(0,0,0,0);
+                _current_x--;
         }
-        void right(int t) {
+        void right() {
                 send(0,2,0,0);
-                usleep(t);
+                usleep(_x_step);
                 send(0,0,0,0);
+                _current_x++;
         }
-        void up(int t) {
+        void up() {
                 send(0,8,0,0);
-                usleep(t);
+                usleep(_y_step);
                 send(0,0,0,0);
+                _current_y++;
         }
-        void down(int t) {
+        void down() {
                 send(0,16,0,0);
-                usleep(t);
+                usleep(_y_step);
                 send(0,0,0,0);
+                _current_y--;
         }
         void zero() {
                 send(0,7,0,0x22);
                 sleep(45);
         }
+        void panTo(int x) {
+                while(x > _current_x)
+                        right();
+                while(x < _current_x)
+                        left();
+        }
+        void tiltTo(int y) {
+                while(y > _current_y)
+                        up();
+                while(y < _current_y)
+                        down();
+        }
+        
         ~PanTilt() {
 	        close(_f);
         }
