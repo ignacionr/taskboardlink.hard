@@ -40,10 +40,12 @@ int main(int argc, char *argv[]) {
 	PanTilt pt;
 	Grabber gr;
 	gr.Open();
-	gr.setPreprocessor(turnOrangeIntoBlack);
+	// gr.setPreprocessor(turnOrangeIntoBlack);
+	gr.setOutput(false);
 	char fn[100];
 	for(int step = 0; step < steps; step++) {
-		sprintf(fn, "step%02d.jpg", step);
+		// sprintf(fn, "step%02d.jpg", step);
+		sprintf(fn, "step%02d.yuv444", step);
 		if (right) 
 			pt.right(t);
 		else

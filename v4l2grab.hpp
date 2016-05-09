@@ -62,6 +62,7 @@
 #include <inttypes.h>
 
 #include <functional>
+#include <fstream>
 
 #include "config.h"
 #include "yuv.h"
@@ -95,13 +96,14 @@ struct buffer {
 // global settings
  unsigned int width = 640;
  unsigned int height = 480;
- unsigned int fps = 30;
- int continuous = 0;
+//  unsigned int fps = 30;
+//  int continuous = 0;
  unsigned char jpegQuality = 70;
  const char* jpegFilename = NULL;
  char* jpegFilenamePart = NULL;
  const char* deviceName = "/dev/video0";
  bool _writeJpeg = true;
+ bool _writeRaw = false;
  std::function<void(int,int,unsigned char*)> _processor;
 
 /**
@@ -201,14 +203,20 @@ void imageProcess(const void* p, struct timeval timestamp)
 	//timestamp.tv_sec
 	//timestamp.tv_usec
 	unsigned char* src = (unsigned char*)p;
-	unsigned char* dst = (unsigned char*)malloc(width*height*3*sizeof(char));
+	auto imgSize = width*height*3*sizeof(char);
+	unsigned char* dst = (unsigned char*)malloc(imgSize);
 
 	YUV420toYUV444(width, height, src, dst);
 	
 	if (_processor)
 		_processor(width, height, dst);
 
-	// write jpeg
+	if (_writeRaw)
+		{
+			std::ofstream outfile(jpegFilename, std::ofstream::binary);
+			outfile.write((const char *)dst, imgSize);
+		}
+
 	if (_writeJpeg)
 		jpegWrite(dst,jpegFilename);
 
@@ -612,8 +620,7 @@ public:
 		const char *oDeviceName = NULL,  
 		int oQuality = 0, 
 		int oWidth = 0, 
-		int oHeight = 0,
-		int oFPS=0)
+		int oHeight = 0)
 	{
 		if (oDeviceName)
 			deviceName = oDeviceName;
@@ -623,13 +630,16 @@ public:
 			width = oWidth;
 		if (oHeight)
 			height = oHeight;
-		if (oFPS)
-			fps = oFPS;
 		io = IO_METHOD_MMAP;
 	}
 	
 	void setPreprocessor (std::function<void(int,int,unsigned char*)> fnPreprocessor) {
 		_processor = fnPreprocessor;
+	}
+	
+	void setOutput(bool jpeg, bool omit = false) {
+		_writeRaw = !jpeg && !omit;
+		_writeJpeg = jpeg && !omit;
 	}
 	
 	void Open() {
