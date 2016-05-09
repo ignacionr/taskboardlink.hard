@@ -20,13 +20,13 @@ bool selectOrange(int width, int height, unsigned char *yuv) {
 		int g = (int) (Y - 0.34414 * (Cb - 0x80) - 0.71414 * (Cr - 0x80));
 		int b = (int) (Y + 1.77200 * (Cb - 0x80));
 		
-		if (((r-g) > 20) && (g > b) && ((g-b) > 20)) {
+		if (((r-g) > 30) && (g > b) && ((g-b) > 30)) {
 			orangeCount++;
 		}
  	}
 	 auto factor = (orangeCount * 100.0 / (width * height));
-	 std::cout << "orange: " << orangeCount << ", " << factor << "%" << std::endl;
-	 return factor > 1.0; // more than 1% orange
+	 // std::cout << "orange: " << orangeCount << ", " << factor << "%" << std::endl;
+	 return factor > 3.0;
 }
 
 #define X_STEP 30000
