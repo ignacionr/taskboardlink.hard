@@ -61,6 +61,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#include <functional>
+
 #include "config.h"
 #include "yuv.h"
 
@@ -99,6 +101,8 @@ struct buffer {
  const char* jpegFilename = NULL;
  char* jpegFilenamePart = NULL;
  const char* deviceName = "/dev/video0";
+ bool _writeJpeg = true;
+ std::function<void(int,int,unsigned char*)> _processor;
 
 /**
 SIGINT interput handler
@@ -200,9 +204,13 @@ void imageProcess(const void* p, struct timeval timestamp)
 	unsigned char* dst = (unsigned char*)malloc(width*height*3*sizeof(char));
 
 	YUV420toYUV444(width, height, src, dst);
+	
+	if (_processor)
+		_processor(width, height, dst);
 
 	// write jpeg
-	jpegWrite(dst,jpegFilename);
+	if (_writeJpeg)
+		jpegWrite(dst,jpegFilename);
 
 	// free temporary image
 	free(dst);
@@ -618,6 +626,10 @@ public:
 		if (oFPS)
 			fps = oFPS;
 		io = IO_METHOD_MMAP;
+	}
+	
+	void setPreprocessor (std::function<void(int,int,unsigned char*)> fnPreprocessor) {
+		_processor = fnPreprocessor;
 	}
 	
 	void Open() {
