@@ -1,6 +1,8 @@
 #include "v4l2grab.hpp"
 #include "pantilt.hpp"
 
+#include <iostream>
+
 void help() {
 	puts("Usage: grabtest <left|right> steps length");
 }
@@ -22,7 +24,9 @@ bool selectOrange(int width, int height, unsigned char *yuv) {
 			orangeCount++;
 		}
  	}
-	 return (orangeCount * 100.0 / (width * height)) > 1.0; // more than 1% orange
+	 auto factor = (orangeCount * 100.0 / (width * height));
+	 std::cout << factor << std::endl;
+	 return factor > 1.0; // more than 1% orange
 }
 
 int main(int argc, char *argv[]) {
