@@ -5,7 +5,8 @@ void help() {
 	puts("Usage: grabtest <left|right> steps length");
 }
 
-void turnOrangeIntoBlack(int width, int height, unsigned char *yuv) {
+bool selectOrange(int width, int height, unsigned char *yuv) {
+	auto orangeCount = 0;
 	for (int x = 0; x < width; x++)
 	for (int y = 0; y < height; y++)
 	{
@@ -18,11 +19,10 @@ void turnOrangeIntoBlack(int width, int height, unsigned char *yuv) {
 		int b = (int) (Y + 1.77200 * (Cb - 0x80));
 		
 		if (r > 10 && b < r && abs(r-g) < 20) {
-			*(yuv-3) = 0;
-			*(yuv-2) = 0;
-			*(yuv-1) = 0;
+			orangeCount++;
 		}
  	}
+	 return (orangeCount * 100 / (width * height)) > 3; // more than 3% orange
 }
 
 int main(int argc, char *argv[]) {
@@ -40,12 +40,12 @@ int main(int argc, char *argv[]) {
 	PanTilt pt;
 	Grabber gr;
 	gr.Open();
-	// gr.setPreprocessor(turnOrangeIntoBlack);
-	gr.setOutput(false);
+	gr.setPreprocessor(selectOrange);
+	// gr.setOutput(false);
 	char fn[100];
-	for(int step = 0; step < steps; step++) {
-		// sprintf(fn, "step%02d.jpg", step);
-		sprintf(fn, "step%02d.yuv444", step);
+	for (int step = 0; step < steps; step++) {
+		sprintf(fn, "step%02d.jpg", step);
+		// sprintf(fn, "step%02d.yuv444", step);
 		if (right) 
 			pt.right(t);
 		else

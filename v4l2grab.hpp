@@ -104,7 +104,7 @@ struct buffer {
  const char* deviceName = "/dev/video0";
  bool _writeJpeg = true;
  bool _writeRaw = false;
- std::function<void(int,int,unsigned char*)> _processor;
+ std::function<bool(int,int,unsigned char*)> _processor;
 
 /**
 SIGINT interput handler
@@ -208,16 +208,16 @@ void imageProcess(const void* p, struct timeval timestamp)
 
 	YUV420toYUV444(width, height, src, dst);
 	
-	if (_processor)
-		_processor(width, height, dst);
+	bool writeFile = (_processor) ? _processor(width, height, dst) : true;
+	
 
-	if (_writeRaw)
+	if (writeFile && _writeRaw)
 		{
 			std::ofstream outfile(jpegFilename, std::ofstream::binary);
 			outfile.write((const char *)dst, imgSize);
 		}
 
-	if (_writeJpeg)
+	if (writeFile && _writeJpeg)
 		jpegWrite(dst,jpegFilename);
 
 	// free temporary image
@@ -633,7 +633,7 @@ public:
 		io = IO_METHOD_MMAP;
 	}
 	
-	void setPreprocessor (std::function<void(int,int,unsigned char*)> fnPreprocessor) {
+	void setPreprocessor (std::function<bool(int,int,unsigned char*)> fnPreprocessor) {
 		_processor = fnPreprocessor;
 	}
 	
