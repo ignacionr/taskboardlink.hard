@@ -83,8 +83,23 @@ public:
                 write(_f, buff, 7);
                 cnt = read(_f, buff, 4);
         }
+        void left(int t) {
+                send(0,4,0,0);
+                usleep(t);
+                send(0,0,0,0);
+        }
+        void right(int t) {
+                send(0,2,0,0);
+                usleep(t);
+                send(0,0,0,0);
+        }
         void up(int t) {
-                send(0,6,0,0);
+                send(0,8,0,0);
+                usleep(t);
+                send(0,0,0,0);
+        }
+        void down(int t) {
+                send(0,16,0,0);
                 usleep(t);
                 send(0,0,0,0);
         }
