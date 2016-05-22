@@ -122,7 +122,7 @@ public:
         }
         void zero() {
                 send(0,7,0,0x22);
-                sleep(45);
+                sleep(70);
         }
         void panTo(int x) {
                 while(x > _current_x)
