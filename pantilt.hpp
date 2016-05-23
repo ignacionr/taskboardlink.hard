@@ -122,6 +122,8 @@ public:
         }
         void zero() {
                 send(0,7,0,0x22);
+                setX(0);
+                setY(0);
                 sleep(70);
         }
         void panTo(int x) {
