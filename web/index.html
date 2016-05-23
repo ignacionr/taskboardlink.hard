@@ -14,7 +14,7 @@
 			$(document).on('click', 'button.left', function() { $.post("left"); });
 			$(document).on('click', 'button.right', function() { $.post("right"); });
 			setInterval(function() {
-				$("img.cam").attr("src", "current.jpg");
+				$("img.cam").attr("src", "current.jpg?" + (new Date().getTime()));
 			}, 500);
 		</script>
 	</body>
