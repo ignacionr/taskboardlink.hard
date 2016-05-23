@@ -6,10 +6,26 @@
 #define X_STEP 35000
 #define Y_STEP 70000
 #define WIDTH	100
-#define HEIGHT	40
+#define HEIGHT	22
 
 int main(int argc, char *argv[]) {
 	PanTilt pt(X_STEP,Y_STEP);
+	if (argc == 2) {
+		if (0 == strcmp(argv[1], "up"))
+			pt.up();
+		else if (0 == strcmp(argv[1], "down"))
+			pt.down();
+		else if (0 == strcmp(argv[1], "left"))
+			pt.left();
+		else if (0 == strcmp(argv[1], "right"))
+			pt.right();
+		else if (0 == strcmp(argv[1], "zero"))
+			pt.zero();
+		else
+			puts("I didn't get that.");
+		return 0;
+	}
+	
 	Grabber gr;
 	gr.Open();
 	pt.zero();

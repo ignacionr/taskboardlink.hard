@@ -1,7 +1,10 @@
 all: grabtest
 
-grab-upload: grabtest
-	./grabtest && tar -cf images.tar *.jpg && rm *.jpg && scp images.tar root@dev2.run.fastmicroservices.com:/root/Data/.
+grab-upload: images.tar
+	rsync images.tar root@dev2.run.fastmicroservices.com:/root/Data/.
+
+images.tar: grabtest
+	./grabtest && tar -cf images.tar *.jpg && rm *.jpg
 
 grabtest: grabtest.o yuv.o
 	g++ yuv.o grabtest.o -o grabtest -ljpeg -lv4l2
