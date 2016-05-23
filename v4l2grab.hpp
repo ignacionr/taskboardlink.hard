@@ -226,42 +226,48 @@ bool imageProcess(const void* p, struct timeval timestamp)
 	return writeFile;
 }
 
+#ifndef V4L2_BUF_FLAG_LAST
+#define V4L2_BUF_FLAG_LAST 0x00100000
+#endif
+
 /**
 	read single frame
 */
-int frameRead(bool &result)
+int frameRead(bool &result, bool dontSkip)
 {
 	struct v4l2_buffer buf;
 
-	unsigned int i;
+	for(auto skip = dontSkip ? 0 : 4; skip >=0; skip--) {
+		CLEAR(buf);
 
-	CLEAR(buf);
+		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		buf.memory = V4L2_MEMORY_MMAP;
+		if (-1 == xioctl(VIDIOC_DQBUF, &buf)) {
+			switch (errno) {
+				case EAGAIN:
+					return 0;
+					break;
 
-	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	buf.memory = V4L2_MEMORY_MMAP;
+				case EIO:
+					// Could ignore EIO, see spec
+					// fall through
 
-	if (-1 == xioctl(VIDIOC_DQBUF, &buf)) {
-		switch (errno) {
-			case EAGAIN:
-				return 0;
-
-			case EIO:
-				// Could ignore EIO, see spec
-				// fall through
-
-			default:
-				errno_exit("VIDIOC_DQBUF");
+				default:
+					errno_exit("VIDIOC_DQBUF");
+			}
 		}
+		if (buf.index >= n_buffers) {
+			std::cout << buf.index << std::endl;
+		}
+		assert(buf.index < n_buffers);
+
+		if (0 == skip) {
+			result = imageProcess(buffers[buf.index].start,buf.timestamp);
+		}
+
+		if (-1 == xioctl(VIDIOC_QBUF, &buf))
+			errno_exit("VIDIOC_QBUF");
 	}
-
-	assert(buf.index < n_buffers);
-
-	result = imageProcess(buffers[buf.index].start,buf.timestamp);
-
-	if (-1 == xioctl(VIDIOC_QBUF, &buf))
-		errno_exit("VIDIOC_QBUF");
-
-
 	return 1;
 }
 
@@ -277,6 +283,7 @@ bool mainLoop(void)
 	numberOfTimeouts = 0;
 	count = 3;
 
+	bool forceProcess = false;
 	while (count-- > 0 && !result) {
 		for (;;) {
 			fd_set fds;
@@ -308,10 +315,11 @@ bool mainLoop(void)
 				}
 			}
 
-			if (frameRead(result))
+			if (frameRead(result, forceProcess))
 				break;
 
 			/* EAGAIN - continue select loop. */
+			forceProcess = true; // don't skip frames
 		}
 	}
 	return result;
