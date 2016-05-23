@@ -3,16 +3,20 @@
 	</head>
 	<body>
 		<img src="current.jpg" class="cam" />
+		<span class="position">&nbsp;</span>
 		<button class="up">Up</button>
 		<button class="down">Down</button>
 		<button class="left">Left</button>
 		<button class="right">Right</button>
+		<button class="zero">Zero</button>
 		<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 		<script type="text/javascript">
-			$(document).on('click', 'button.up', function() { $.post("up"); });
-			$(document).on('click', 'button.down', function() { $.post("down"); });
-			$(document).on('click', 'button.left', function() { $.post("left"); });
-			$(document).on('click', 'button.right', function() { $.post("right"); });
+			var update_coords = function(data) { $("span.position").text(JSON.stringify(data)); };
+			$(document).on('click', 'button.up', function() { $.post("up", update_coords); });
+			$(document).on('click', 'button.down', function() { $.post("down", update_coords); });
+			$(document).on('click', 'button.left', function() { $.post("left", update_coords); });
+			$(document).on('click', 'button.right', function() { $.post("right", update_coords); });
+			$(document).on('click', 'button.zero', function() { $.post("zero", update_coords); });
 			var $img = $("img.cam");
 			var getimage = function() {
 				$img.attr("src", "current.jpg?" + (new Date().getTime()));

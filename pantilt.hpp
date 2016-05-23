@@ -136,6 +136,8 @@ public:
                 while(y < _current_y)
                         down();
         }
+        int x() const { return _current_x; }
+        int y() const { return _current_y; }
         
         ~PanTilt() {
 	        close(_f);

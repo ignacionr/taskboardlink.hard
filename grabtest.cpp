@@ -1,5 +1,8 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <map>
+#include <functional>
 
 #define WIDTH	100
 #define HEIGHT	22
@@ -13,35 +16,30 @@
 static const char *s_http_port = "8000";
 static struct mg_serve_http_opts s_http_server_opts;
 
-Cam cam;
-std::string ok_response("OK");
+std::map<std::string, std::function<void()>> cam_moves;
+PanTilt* _pantilt;
+Grabber* _grabber;
+
+void report_status(struct mg_connection *nc) {
+	std::stringstream msgs;
+	msgs << "{ x: " << _pantilt->x() << "; y: " << _pantilt->y() << " }";
+	auto msg = msgs.str();
+	mg_send_head(nc, 200, msg.size(), NULL);
+	mg_send(nc, msg.c_str(), msg.size());
+}
 
 void ev_handler(struct mg_connection *nc, int ev, void *p) {
 	auto hm = (struct http_message *) p;
 	if (ev == MG_EV_HTTP_REQUEST) {
-		if (mg_vcmp(&hm->uri, "/current.jpg") == 0) {
-			cam.grabber().Capture("./web/current.jpg");
+		std::string uri(hm->uri.p, hm->uri.len);
+		auto move_op = cam_moves.find(uri);
+		if (move_op != cam_moves.end()) {
+			(*move_op).second();
+			report_status(nc);
+		}
+		else if (mg_vcmp(&hm->uri, "/current.jpg") == 0) {
+			_grabber->Capture("./web/current.jpg");
 			mg_serve_http(nc, hm, s_http_server_opts);
-		}
-		else if (mg_vcmp(&hm->uri, "/up") == 0) {
-			cam.pantilt().up();
-			mg_send_head(nc, 200, ok_response.size(), NULL);
-			mg_send(nc, ok_response.c_str(), ok_response.size());
-		}
-		else if (mg_vcmp(&hm->uri, "/down") == 0) {
-			cam.pantilt().down();
-			mg_send_head(nc, 200, ok_response.size(), NULL);
-			mg_send(nc, ok_response.c_str(), ok_response.size());
-		}
-		else if (mg_vcmp(&hm->uri, "/left") == 0) {
-			cam.pantilt().left();
-			mg_send_head(nc, 200, ok_response.size(), NULL);
-			mg_send(nc, ok_response.c_str(), ok_response.size());
-		}
-		else if (mg_vcmp(&hm->uri, "/right") == 0) {
-			cam.pantilt().right();
-			mg_send_head(nc, 200, ok_response.size(), NULL);
-			mg_send(nc, ok_response.c_str(), ok_response.size());
 		}
 		else {
 			mg_serve_http(nc, hm, s_http_server_opts);
@@ -55,6 +53,17 @@ int main(int argc, char *argv[]) {
 
 	mg_mgr_init(&mgr, NULL);
 	nc = mg_bind(&mgr, s_http_port, ev_handler);
+	
+	Cam cam;
+	
+	cam_moves["/up"] 	= [&] { cam.pantilt().up(); };
+	cam_moves["/down"] 	= [&] { cam.pantilt().down(); };
+	cam_moves["/left"] 	= [&] { cam.pantilt().left(); };
+	cam_moves["/right"] = [&] { cam.pantilt().right(); };
+	cam_moves["/zero"] 	= [&] { cam.pantilt().zero(); };
+	
+	_grabber = &cam.grabber();
+	_pantilt = &cam.pantilt();
 
 	// Set up HTTP server parameters
 	mg_set_protocol_http_websocket(nc);
