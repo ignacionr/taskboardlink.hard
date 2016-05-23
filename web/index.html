@@ -13,9 +13,12 @@
 			$(document).on('click', 'button.down', function() { $.post("down"); });
 			$(document).on('click', 'button.left', function() { $.post("left"); });
 			$(document).on('click', 'button.right', function() { $.post("right"); });
-			setInterval(function() {
-				$("img.cam").attr("src", "current.jpg?" + (new Date().getTime()));
-			}, 500);
+			var $img = $("img.cam");
+			var getimage = function() {
+				$img.attr("src", "current.jpg?" + (new Date().getTime()));
+			};
+			$img.load(getimage);
+			getimage();
 		</script>
 	</body>
 </html>
