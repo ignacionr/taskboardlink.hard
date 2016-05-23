@@ -661,8 +661,8 @@ public:
 		if (oJpegFilename)
 			jpegFilename = oJpegFilename;
 
-		captureStop();
-		captureStart();
+		//captureStop();
+		//captureStart();
 		auto result =  mainLoop();
 		return result;
 	}
