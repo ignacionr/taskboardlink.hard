@@ -271,13 +271,13 @@ int frameRead(bool &result)
 bool mainLoop(void)
 {	
 	int count;
-	bool result;
+	bool result = false;
 	unsigned int numberOfTimeouts;
 
 	numberOfTimeouts = 0;
 	count = 3;
 
-	while (count-- > 0) {
+	while (count-- > 0 && !result) {
 		for (;;) {
 			fd_set fds;
 			struct timeval tv;
@@ -323,11 +323,19 @@ bool mainLoop(void)
 void captureStop(void)
 {
 	enum v4l2_buf_type type;
-
 	type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
 	if (-1 == xioctl(VIDIOC_STREAMOFF, &type))
 	errno_exit("VIDIOC_STREAMOFF");
+}
+
+void streamOn() {
+	enum v4l2_buf_type type;
+	type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+	if (-1 == xioctl(VIDIOC_STREAMON, &type))
+		errno_exit("VIDIOC_STREAMON");
+
 }
 
 /**
@@ -336,26 +344,21 @@ void captureStop(void)
 void captureStart(void)
 {
 	unsigned int i;
-	enum v4l2_buf_type type;
 
 	for (i = 0; i < n_buffers; ++i) {
 		struct v4l2_buffer buf;
 
-		CLEAR(buf);
+	CLEAR(buf);
 
-		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		buf.memory = V4L2_MEMORY_MMAP;
-		buf.index = i;
+	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	buf.memory = V4L2_MEMORY_MMAP;
+	buf.index = i;
 
-		if (-1 == xioctl(VIDIOC_QBUF, &buf))
-			errno_exit("VIDIOC_QBUF");
-		}
+	if (-1 == xioctl(VIDIOC_QBUF, &buf))
+		errno_exit("VIDIOC_QBUF");
+	}
 
-	type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-	if (-1 == xioctl(VIDIOC_STREAMON, &type))
-		errno_exit("VIDIOC_STREAMON");
-
+	streamOn();
 }
 
 void deviceUninit(void)
@@ -658,9 +661,10 @@ public:
 		if (oJpegFilename)
 			jpegFilename = oJpegFilename;
 
-		// process frames
-		return mainLoop();
-
+		captureStop();
+		captureStart();
+		auto result =  mainLoop();
+		return result;
 	}
 	
 	void Close() {
