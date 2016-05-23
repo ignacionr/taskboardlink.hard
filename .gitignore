@@ -15,5 +15,5 @@ stamp-h1
 compile
 **.browse*
 grabtest
-*.jpg
+**.jpg
 nohup.out

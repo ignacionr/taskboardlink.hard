@@ -3,5 +3,16 @@
 	</head>
 	<body>
 		<img src="current.jpg" />
+		<button class="up">Up</button>
+		<button class="down">Down</button>
+		<button class="left">Left</button>
+		<button class="right">Right</button>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+		<script type="text/javascript">
+			$(document).on('click', 'button.up', function() { $.post("up"); })
+			$(document).on('click', 'button.down', function() { $.post("down"); })
+			$(document).on('click', 'button.left', function() { $.post("left"); })
+			$(document).on('click', 'button.right', function() { $.post("right"); })
+		</script>
 	</body>
 </html>
