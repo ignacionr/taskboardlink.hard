@@ -3,6 +3,7 @@
 #include <sstream>
 #include <map>
 #include <functional>
+#include <vector>
 
 #define WIDTH	100
 #define HEIGHT	22
@@ -12,6 +13,7 @@
 #include "mongoose.h"
 
 #include "Cam.hpp"
+#include "ImageFeatures.hpp"
 
 static const char *s_http_port = "8000";
 static struct mg_serve_http_opts s_http_server_opts;
@@ -63,6 +65,11 @@ int main(int argc, char *argv[]) {
 	cam_moves["/zero"] 	= [&] { cam.pantilt().zero(); };
 	
 	_grabber = &cam.grabber();
+	_grabber->setPreprocessor( [] (int width, int height, unsigned char *data) {
+		ImageFeatures features(width,height,data);
+		std::cout << features.size() << " features." << std::endl;
+		return true;
+	});
 	_pantilt = &cam.pantilt();
 
 	// Set up HTTP server parameters
