@@ -15,7 +15,7 @@ clean:
 yuv.o: yuv.c yuv.h
 	g++ -c yuv.c
 
-grabtest.o: grabtest.cpp v4l2grab.hpp yuv.h pantilt.hpp
+grabtest.o: grabtest.cpp v4l2grab.hpp yuv.h pantilt.hpp ImageFeatures.hpp
 	g++ -std=c++11 -c grabtest.cpp
 
 mongoose.o: mongoose.c mongoose.h
