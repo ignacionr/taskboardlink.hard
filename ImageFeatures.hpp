@@ -2,10 +2,11 @@ class ImageFeatures : public std::vector<std::pair<int,int>> {
 	int	_threshold;
 	#define MAX_FEATURES	10000
 	#define	GRAIN			5
+	#define START_THRESHOLD		5
 public:
 	ImageFeatures(int width, int height, unsigned char *data) {
 		bool tested = false;
-		for(_threshold = 10; size() >= MAX_FEATURES || !tested; _threshold++) {
+		for(_threshold = START_THRESHOLD; size() >= MAX_FEATURES || !tested; _threshold++) {
 			clear();
 			int up = *data;
 			for (int y = 2; y < height-1 && size() < MAX_FEATURES; y+= GRAIN) {
