@@ -72,7 +72,7 @@ public:
 		result.off_y = y;
 		std::map<int,int> votes;
 		for(auto feature_row: *this) {
-			auto pother_row = other.find(feature_row.first);
+			auto pother_row = other.find(feature_row.first + y);
 			if (pother_row != other.end()) {
 				for(auto this_x: feature_row.second) {
 					for (auto other_x: (*pother_row).second) {
