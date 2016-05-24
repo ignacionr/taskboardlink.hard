@@ -2,8 +2,8 @@ typedef std::vector<int> Column;
 
 class ImageFeatures : public std::map<int, Column> {
 	int	_threshold;
-	#define MAX_FEATURES	10000
-	#define	GRAIN				5
+	#define MAX_FEATURES	5000
+	#define	GRAIN				1
 	#define START_THRESHOLD		5
 
 	void paint(int width, unsigned char *data) {

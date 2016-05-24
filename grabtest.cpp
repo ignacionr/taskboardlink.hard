@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
 		ImageFeatures left = current_features;
 		// move to the left
 		cam.pantilt().left();
+		cam.grabber().Capture("./web/current.jpg");
 		// determine the correction to the current features
 		auto correction = left.suggest_correction_after_pan(current_features);
 		std::cout << correction << std::endl;

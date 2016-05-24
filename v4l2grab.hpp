@@ -96,8 +96,6 @@ struct buffer {
 // global settings
  unsigned int width = 640;
  unsigned int height = 480;
-//  unsigned int fps = 30;
-//  int continuous = 0;
  unsigned char jpegQuality = 70;
  const char* jpegFilename = NULL;
  char* jpegFilenamePart = NULL;
@@ -237,6 +235,7 @@ int frameRead(bool &result, bool dontSkip)
 {
 	struct v4l2_buffer buf;
 
+	dontSkip = true;
 	for(auto skip = dontSkip ? 0 : 4; skip >=0; skip--) {
 		CLEAR(buf);
 
@@ -669,8 +668,8 @@ public:
 		if (oJpegFilename)
 			jpegFilename = oJpegFilename;
 
-		//captureStop();
-		//captureStart();
+		captureStop();
+		captureStart();
 		auto result =  mainLoop();
 		return result;
 	}
