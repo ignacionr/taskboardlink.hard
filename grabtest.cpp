@@ -4,6 +4,7 @@
 #include <map>
 #include <functional>
 #include <vector>
+#include <algorithm>
 
 #define WIDTH	100
 #define HEIGHT	22
