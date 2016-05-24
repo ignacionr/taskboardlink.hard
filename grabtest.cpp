@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 		cam.pantilt().left();
 		// determine the correction to the current features
 		auto correction = left.suggest_correction_after_pan(current_features);
+		std::cout << correction << std::endl;
 		// set the correction as coordinates (for now, just to show)
 		cam.pantilt().setX(correction.off_x);
 		cam.pantilt().setY(correction.off_y);

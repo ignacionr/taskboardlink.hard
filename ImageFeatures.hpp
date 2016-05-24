@@ -66,6 +66,10 @@ public:
 		bool operator>(const correction& other) {
 			return votes > other.votes;
 		}
+		friend std::ostream& operator<<(std::ostream& str, const correction& c) {
+			str << "Correction: (" << c.off_x << "," << c.off_y << ") voted with " << c.votes;
+			return str;
+		}
 	};
 
 	correction suggest_correction_after_pan(const ImageFeatures& other, int y) const {
