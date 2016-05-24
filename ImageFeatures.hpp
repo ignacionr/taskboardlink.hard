@@ -30,6 +30,7 @@ class ImageFeatures : public std::map<int, Column> {
 	}
 
 public:
+	ImageFeatures() {}
 	ImageFeatures(int width, int height, unsigned char *data) {
 		bool tested = false;
 		int total_count = 0;

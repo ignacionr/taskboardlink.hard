@@ -25,7 +25,7 @@ Grabber* _grabber;
 
 void report_status(struct mg_connection *nc) {
 	std::stringstream msgs;
-	msgs << "{ x: " << _pantilt->x() << "; y: " << _pantilt->y() << " }";
+	msgs << "{ x: " << _pantilt->x() << ", y: " << _pantilt->y() << " }";
 	auto msg = msgs.str();
 	mg_send_head(nc, 200, msg.size(), NULL);
 	mg_send(nc, msg.c_str(), msg.size());
@@ -40,10 +40,10 @@ void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			(*move_op).second();
 			report_status(nc);
 		}
-		else if (mg_vcmp(&hm->uri, "/current.jpg") == 0) {
-			_grabber->Capture("./web/current.jpg");
-			mg_serve_http(nc, hm, s_http_server_opts);
-		}
+		// else if (mg_vcmp(&hm->uri, "/current.jpg") == 0) {
+		// 	_grabber->Capture("./web/current.jpg");
+		// 	mg_serve_http(nc, hm, s_http_server_opts);
+		// }
 		else {
 			mg_serve_http(nc, hm, s_http_server_opts);
 		}
@@ -58,17 +58,30 @@ int main(int argc, char *argv[]) {
 	nc = mg_bind(&mgr, s_http_port, ev_handler);
 	
 	Cam cam;
+	ImageFeatures current_features;
+	_grabber = &cam.grabber();
 	
 	cam_moves["/up"] 	= [&] { cam.pantilt().up(); };
 	cam_moves["/down"] 	= [&] { cam.pantilt().down(); };
-	cam_moves["/left"] 	= [&] { cam.pantilt().left(); };
+	cam_moves["/left"] 	= [&] {
+		// take a picture
+		cam.grabber().Capture("./web/current.jpg");
+		// save the features
+		ImageFeatures left = current_features;
+		// move to the left
+		cam.pantilt().left();
+		// determine the correction to the current features
+		auto correction = left.suggest_correction_after_pan(current_features);
+		// set the correction as coordinates (for now, just to show)
+		cam.pantilt().setX(correction.off_x);
+		cam.pantilt().setY(correction.off_y);
+	};
 	cam_moves["/right"] = [&] { cam.pantilt().right(); };
 	cam_moves["/zero"] 	= [&] { cam.pantilt().zero(); };
 	
-	_grabber = &cam.grabber();
-	_grabber->setPreprocessor( [] (int width, int height, unsigned char *data) {
+	_grabber->setPreprocessor( [&] (int width, int height, unsigned char *data) {
 		ImageFeatures features(width,height,data);
-		std::cout << features.size() << " features." << std::endl;
+		current_features = features;
 		return true;
 	});
 	_pantilt = &cam.pantilt();
