@@ -65,12 +65,12 @@ public:
 		paint(data);
 	}
 	
-	bool is_usable() { return _feature_count * 20 > MAX_FEATURES; }
+	bool is_usable() { return _feature_count * 10 > MAX_FEATURES; }
 	
 	struct correction {
 		int	off_x;
 		int off_y;
-		int votes;
+		int votes = 0;
 		bool operator>(const correction& other) {
 			return votes > other.votes;
 		}
