@@ -105,14 +105,6 @@ struct buffer {
  std::function<bool(int,int,unsigned char*)> _processor;
 
 /**
-SIGINT interput handler
-*/
-// void StopContCapture(int sig_id) {
-// 	printf("stoping continuous capture\n");
-// 	continuous = 0;
-// }
-
-/**
 	Print error message and terminate programm with EXIT_FAILURE return code.
 
 	\param s error message to print
@@ -231,42 +223,38 @@ bool imageProcess(const void* p, struct timeval timestamp)
 /**
 	read single frame
 */
-int frameRead(bool &result, bool dontSkip)
+int frameRead(bool &result)
 {
 	struct v4l2_buffer buf;
 
-	dontSkip = true;
-	for(auto skip = dontSkip ? 0 : 4; skip >=0; skip--) {
-		CLEAR(buf);
+	CLEAR(buf);
 
-		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		buf.memory = V4L2_MEMORY_MMAP;
-		if (-1 == xioctl(VIDIOC_DQBUF, &buf)) {
-			switch (errno) {
-				case EAGAIN:
-					return 0;
-					break;
+	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	buf.memory = V4L2_MEMORY_MMAP;
+	if (-1 == xioctl(VIDIOC_DQBUF, &buf)) {
+		switch (errno) {
+			case EAGAIN:
+				return 0;
+				break;
 
-				case EIO:
-					// Could ignore EIO, see spec
-					// fall through
+			case EIO:
+				// Could ignore EIO, see spec
+				// fall through
 
-				default:
-					errno_exit("VIDIOC_DQBUF");
-			}
+			default:
+				errno_exit("VIDIOC_DQBUF");
 		}
-		if (buf.index >= n_buffers) {
-			std::cout << buf.index << std::endl;
-		}
-		assert(buf.index < n_buffers);
-
-		if (0 == skip) {
-			result = imageProcess(buffers[buf.index].start,buf.timestamp);
-		}
-
-		if (-1 == xioctl(VIDIOC_QBUF, &buf))
-			errno_exit("VIDIOC_QBUF");
 	}
+	if (buf.index >= n_buffers) {
+		std::cout << buf.index << std::endl;
+	}
+	assert(buf.index < n_buffers);
+
+	result = imageProcess(buffers[buf.index].start,buf.timestamp);
+
+	if (-1 == xioctl(VIDIOC_QBUF, &buf))
+		errno_exit("VIDIOC_QBUF");
+
 	return 1;
 }
 
@@ -282,7 +270,6 @@ bool mainLoop(void)
 	numberOfTimeouts = 0;
 	count = 3;
 
-	bool forceProcess = false;
 	while (count-- > 0 && !result) {
 		for (;;) {
 			fd_set fds;
@@ -314,11 +301,8 @@ bool mainLoop(void)
 				}
 			}
 
-			if (frameRead(result, forceProcess))
+			if (frameRead(result))
 				break;
-
-			/* EAGAIN - continue select loop. */
-			forceProcess = true; // don't skip frames
 		}
 	}
 	return result;

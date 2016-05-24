@@ -61,24 +61,45 @@ int main(int argc, char *argv[]) {
 	ImageFeatures current_features;
 	_grabber = &cam.grabber();
 	
-	cam_moves["/up"] 	= [&] { cam.pantilt().up(); };
-	cam_moves["/down"] 	= [&] { cam.pantilt().down(); };
-	cam_moves["/left"] 	= [&] {
+	auto movefn = [&] (std::function<void()> mv, bool pan) {
 		// take a picture
 		cam.grabber().Capture("./web/current.jpg");
 		// save the features
-		ImageFeatures left = current_features;
-		// move to the left
-		cam.pantilt().left();
-		cam.grabber().Capture("./web/current.jpg");
-		// determine the correction to the current features
-		auto correction = left.suggest_correction_after_pan(current_features);
-		std::cout << correction << std::endl;
-		// set the correction as coordinates (for now, just to show)
-		cam.pantilt().setX(correction.off_x);
-		cam.pantilt().setY(correction.off_y);
+		ImageFeatures before = current_features;
+		if (!before.is_usable()) {
+			std::cout << "\athe current position doesn't have enough features!" << std::endl;
+		}
+		else {
+			mv();
+			cam.grabber().Capture("./web/current.jpg");
+			if (!current_features.is_usable()) {
+				std::cout << "\athe new position doesn't have enough features!" << std::endl;
+			}
+			else {
+				// determine the correction to the current features
+				auto correction = pan ?
+					before.suggest_correction_after_pan(current_features) :
+					before.suggest_correction_after_tilt(current_features);
+				std::cout << correction << std::endl;
+				// set the correction as coordinates (for now, just to show)
+				cam.pantilt().setX(correction.off_x);
+				cam.pantilt().setY(correction.off_y);
+			}
+		}
 	};
-	cam_moves["/right"] = [&] { cam.pantilt().right(); };
+	
+	cam_moves["/up"] 	= [&] {
+		movefn([&] { cam.pantilt().up(); }, false);
+	};
+	cam_moves["/down"] 	= [&] {
+		movefn([&] { cam.pantilt().down(); }, false);
+	};
+	cam_moves["/left"] 	= [&] {
+		movefn([&] { cam.pantilt().left(); }, true);
+	};
+	cam_moves["/right"] 	= [&] {
+		movefn([&] { cam.pantilt().right(); }, true);
+	};
 	cam_moves["/zero"] 	= [&] { cam.pantilt().zero(); };
 	
 	_grabber->setPreprocessor( [&] (int width, int height, unsigned char *data) {
